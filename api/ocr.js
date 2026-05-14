@@ -2,7 +2,7 @@
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-    const { image } = req.body; // Base64 image
+    const { image } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -24,15 +24,22 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
+
+        if (!response.ok) {
+            return res.status(500).json({ error: `Google API Error: ${data.error?.message || 'Unknown Error'}` });
+        }
+
+        if (!data.candidates || !data.candidates[0]) {
+            return res.status(500).json({ error: 'AI tidak memberikan jawaban. Coba foto lebih jelas.' });
+        }
+
         const textResponse = data.candidates[0].content.parts[0].text;
-        
-        // Bersihkan jika AI memberikan markdown ```json ... ```
         const jsonString = textResponse.replace(/```json|```/g, '').trim();
         const result = JSON.parse(jsonString);
 
         res.status(200).json(result);
     } catch (error) {
         console.error("Gemini Error:", error);
-        res.status(500).json({ error: 'Gagal menghubungi AI Google.' });
+        res.status(500).json({ error: 'Terjadi kesalahan sistem: ' + error.message });
     }
 }
