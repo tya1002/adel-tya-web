@@ -249,6 +249,7 @@ async function hU(e) {
                 showToast("Gagal: " + err.message);
             } finally {
                 hideOCRPreview();
+                e.target.value = ''; // Reset agar bisa pilih foto yang sama lagi
             }
         };
         img.src = re.target.result;
