@@ -197,50 +197,61 @@ document.getElementById('file-input').addEventListener('change', hU);
 async function hU(e) {
     const f = e.target.files[0]; if(!f) return;
     
-    // Konversi ke Base64 untuk dikirim ke AI
+    showToast("Mengompres gambar...");
+    
     const reader = new FileReader();
     reader.onload = async (re) => {
-        const base64Img = re.target.result;
-        
-        // Tampilkan Preview ke User (UI yang baru kita buat)
-        showOCRPreview(base64Img);
-        showToast("Menghubungkan ke Google AI...");
-        
-        try {
-            // Kirim ke "Asisten Rahasia" kita di Vercel
-            const response = await fetch('/api/ocr', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: base64Img })
-            });
-
-            // Jika dijalankan lokal (bukan di Vercel), api/ocr akan 404
-            if (response.status === 404) {
-                throw new Error("API tidak ditemukan. Fitur ini hanya aktif setelah Anda Deploy ke Vercel.");
-            }
-
-            const result = await response.json();
+        // --- PROSES KOMPRESI (Agar tidak ditolak Vercel) ---
+        const img = new Image();
+        img.onload = async () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
             
-            if (result.error) {
-                throw new Error(result.error);
+            // Batasi ukuran maksimal 1200px (sudah sangat cukup untuk AI)
+            const maxDim = 1200;
+            let w = img.width;
+            let h = img.height;
+            if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
+            else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
+            
+            canvas.width = w; canvas.height = h;
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            // Kompres kualitas ke 0.7 (70%)
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            
+            showOCRPreview(compressedBase64);
+            showToast("Menganalisis dengan Google AI...");
+            
+            try {
+                const response = await fetch('/api/ocr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: compressedBase64 })
+                });
+
+                if (response.status === 404) throw new Error("API tidak ditemukan. Pastikan sudah deploy.");
+                
+                const result = await response.json();
+                if (result.error) throw new Error(result.error);
+
+                let addedCount = 0;
+                result.forEach(item => {
+                    if(item.name && item.kilo) {
+                        addRow(item.name, item.kilo, item.modal || '');
+                        addedCount++;
+                    }
+                });
+
+                showToast(addedCount > 0 ? `Berhasil! ${addedCount} data terbaca.` : "AI tidak menemukan data.");
+            } catch (err) {
+                console.error("AI Error:", err);
+                showToast("Gagal: " + err.message);
+            } finally {
+                hideOCRPreview();
             }
-
-            // Masukkan hasil dari AI ke tabel
-            let addedCount = 0;
-            result.forEach(item => {
-                if(item.name && item.kilo) {
-                    addRow(item.name, item.kilo, item.modal || '');
-                    addedCount++;
-                }
-            });
-
-            showToast(addedCount > 0 ? `Berhasil! ${addedCount} data terbaca oleh AI.` : "AI tidak menemukan data di foto ini.");
-        } catch (err) {
-            console.error("AI Error:", err);
-            showToast("Gagal: " + err.message);
-        } finally {
-            hideOCRPreview();
-        }
+        };
+        img.src = re.target.result;
     };
     reader.readAsDataURL(f);
 }
