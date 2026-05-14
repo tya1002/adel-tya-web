@@ -1,45 +1,23 @@
-// api/ocr.js (Vercel Serverless Function)
+// api/ocr.js (Mode Detektif)
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-    const { image } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-        return res.status(500).json({ error: 'API Key Gemini belum disetting di Vercel.' });
-    }
+    if (!apiKey) return res.status(500).json({ error: 'API Key belum disetting.' });
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "Extract data from this handwritten invoice table. Return ONLY a valid JSON array of objects with keys: 'name', 'kilo', and 'modal'. If 'modal' is missing, leave it empty. Format numbers as decimals. Only return the JSON, no markdown tags." },
-                        { inline_data: { mime_type: "image/jpeg", data: image.split(',')[1] } }
-                    ]
-                }]
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            return res.status(500).json({ error: `Google API Error: ${data.error?.message || 'Unknown Error'}` });
+        // Cek model apa saja yang tersedia untuk kunci ini
+        const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const listData = await listResponse.json();
+        
+        if (!listResponse.ok) {
+            return res.status(500).json({ error: `Gagal list model: ${listData.error?.message || 'Unknown'}` });
         }
 
-        if (!data.candidates || !data.candidates[0]) {
-            return res.status(500).json({ error: 'AI tidak memberikan jawaban. Coba foto lebih jelas.' });
-        }
+        const availableModels = listData.models.map(m => m.name).join(', ');
+        return res.status(500).json({ error: `Kunci Anda hanya mendukung model ini: ${availableModels}. Silakan pilih salah satu untuk saya pasang.` });
 
-        const textResponse = data.candidates[0].content.parts[0].text;
-        const jsonString = textResponse.replace(/```json|```/g, '').trim();
-        const result = JSON.parse(jsonString);
-
-        res.status(200).json(result);
     } catch (error) {
-        console.error("Gemini Error:", error);
-        res.status(500).json({ error: 'Terjadi kesalahan sistem: ' + error.message });
+        res.status(500).json({ error: 'Kesalahan Detektif: ' + error.message });
     }
 }
