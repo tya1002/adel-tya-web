@@ -89,6 +89,74 @@ nav { display: flex; justify-content: space-between; align-items: center; paddin
 .calc-btn.ac { color: #f6ad55; }
 .calc-btn.eq { background: var(--accent); }
 
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 600px) {
+    nav {
+        padding: 10px 15px;
+    }
+    
+    .logo {
+        font-size: 1rem !important;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 5px;
+    }
+
+    .nav-btn {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .nav-btn span {
+        display: none; /* Sembunyikan teks di HP agar muat */
+    }
+
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 15px;
+    }
+
+    .btn-cam-blue {
+        padding: 12px;
+        font-size: 0.8rem;
+    }
+
+    th, td {
+        padding: 8px 4px;
+        font-size: 0.75rem;
+    }
+
+    input {
+        font-size: 0.8rem;
+    }
+
+    /* History Header */
+    .section#history .card > div:first-child {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+
+    /* Calculator Mobile */
+    .calc-panel {
+        width: 90%;
+        bottom: 20px;
+        right: 5%;
+        left: 5%;
+    }
+
+    #result-display {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 .hidden { display: none !important; }
 
 /* --- OCR PREVIEW OVERLAY --- */
