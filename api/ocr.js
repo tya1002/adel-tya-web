@@ -10,8 +10,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Menggunakan model Gemini 2.0 Flash sesuai daftar yang tersedia
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        // Menggunakan model Flash Latest yang lebih stabil kuotanya
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
