@@ -57,6 +57,12 @@ function updateRowTotal(input) {
     row.querySelector('.subtotal-cell').innerText = k > 0 && m > 0 ? "Rp " + (k * m * 1000).toLocaleString('id-ID') : "Rp 0";
 }
 
+function clearTable() {
+    document.getElementById('table-body').innerHTML = '';
+    document.getElementById('result-display').classList.add('hidden');
+    for(let i=0; i<3; i++) addRow();
+}
+
 // --- PROCESSING ---
 function processData() {
     const rows = document.querySelectorAll('#table-body tr');
@@ -103,24 +109,6 @@ function clearHistory() {
         renderHistory();
         showToast("Arsip dikosongkan.");
     }
-}
-
-function copyHistory(id) {
-    const e = rekapHistory.find(h => h.id === id);
-    let txt = `REKAP - ${e.date}\n` + e.items.map(i => `- ${i.n}: ${i.k}kg @${i.m}k = Rp ${i.sub.toLocaleString()}`).join('\n');
-    txt += `\nTOTAL: ${e.totalK}Kg | Rp ${e.totalP.toLocaleString()}`;
-    navigator.clipboard.writeText(txt);
-    showToast("Detail disalin!");
-}
-
-function exportToText() {
-    const k = document.getElementById('total-kilo').innerText, p = document.getElementById('total-penjualan').innerText;
-    let txt = `REKAP ADEL X TYA\n----------------\n` + Array.from(document.querySelectorAll('#table-body tr')).map(r => {
-        const kn = r.querySelector('.input-name').value, kv = r.querySelector('.input-kilo').value, mv = r.querySelector('.input-modal').value;
-        return kv ? `${kn || 'Ikan'}: ${kv}kg @${mv}k` : null;
-    }).filter(x => x).join('\n') + `\n\nTOTAL: ${k}\nHASIL: ${p}`;
-    navigator.clipboard.writeText(txt);
-    showToast("Rekap disalin!");
 }
 
 // --- CALCULATOR ---
