@@ -33,7 +33,7 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: "Extract data from this handwritten invoice table. Return ONLY a valid JSON array of objects with keys: 'name', 'kilo', and 'modal'. If 'modal' is missing, leave it empty. Format numbers as decimals. Only return the JSON, no markdown tags." },
+                            { text: "You are a precise OCR assistant specializing in reading handwritten Indonesian invoice tables. Extract name (IKAN), weight (KILO), and price (MODAL) from the image. Rules:\n1. Pay extreme attention to handwritten digits. Do not confuse '6' with '0' (e.g., '6.8' must not be read as '0.8').\n2. Commas in Indonesian handwriting represent decimals (e.g., '2,5' or '6,8' means '2.5' or '6.8'). Convert them to dot '.' decimals.\n3. DO NOT round or truncate numbers (e.g., '2.5' or '2,5' must be extracted as '2.5', not '2').\n4. Return ONLY a valid JSON array of objects with keys: 'name', 'kilo', and 'modal'. If 'modal' is missing, leave it empty. Format numbers as decimals. Only return the JSON, no markdown tags." },
                             { inline_data: { mime_type: "image/jpeg", data: image.split(',')[1] } }
                         ]
                     }]
