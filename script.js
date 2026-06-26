@@ -57,12 +57,6 @@ function updateRowTotal(input) {
     row.querySelector('.subtotal-cell').innerText = k > 0 && m > 0 ? "Rp " + (k * m * 1000).toLocaleString('id-ID') : "Rp 0";
 }
 
-function clearTable() {
-    document.getElementById('table-body').innerHTML = '';
-    document.getElementById('result-display').classList.add('hidden');
-    for(let i=0; i<3; i++) addRow();
-}
-
 // --- PROCESSING ---
 function processData() {
     const rows = document.querySelectorAll('#table-body tr');
@@ -238,7 +232,9 @@ async function hU(e) {
                 let addedCount = 0;
                 result.forEach(item => {
                     if(item.name && item.kilo) {
-                        addRow(item.name, item.kilo, item.modal || '');
+                        const cleanKilo = String(item.kilo).replace(',', '.');
+                        const cleanModal = item.modal ? String(item.modal).replace(',', '.') : '';
+                        addRow(item.name, cleanKilo, cleanModal);
                         addedCount++;
                     }
                 });
