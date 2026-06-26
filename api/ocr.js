@@ -12,12 +12,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Tidak ada data gambar yang dikirim.' });
     }
 
-    // Daftar model dari yang paling stabil/modern ke versi fallback
+    // Daftar model: Prioritaskan model tercanggih (3.5 Flash) baru kemudian fallback ke versi sebelumnya jika overload
     const models = [
-        'gemini-2.5-flash',
-        'gemini-1.5-flash',
         'gemini-3.5-flash',
-        'gemini-flash-latest'
+        'gemini-flash-latest',
+        'gemini-2.5-flash',
+        'gemini-1.5-flash'
     ];
 
     let lastError = null;
