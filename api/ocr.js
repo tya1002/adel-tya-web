@@ -2,7 +2,7 @@
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-    const { image } = req.body;
+    const { image } = req.body || {};
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -12,12 +12,14 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Tidak ada data gambar yang dikirim.' });
     }
 
-    // Daftar model: Prioritaskan model gemini-1.5-flash untuk akurasi tulisan tangan terbaik, lalu fallback jika overload
+    // Daftar model: Prioritaskan model Pro untuk akurasi tulisan tangan tingkat tinggi, lalu fallback ke Flash jika overload
     const models = [
+        'gemini-1.5-pro',
+        'gemini-pro-latest',
+        'gemini-3.1-pro',
         'gemini-1.5-flash',
         'gemini-3.5-flash',
-        'gemini-flash-latest',
-        'gemini-2.5-flash'
+        'gemini-flash-latest'
     ];
 
     let lastError = null;
@@ -33,8 +35,8 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: "You are a precise OCR assistant specializing in reading handwritten Indonesian invoice tables. Extract name (IKAN), weight (KILO), and price (MODAL) from the image. Rules:\n1. Pay extreme attention to handwritten digits. Do not confuse '6' with '0' (e.g., '6.8' must not be read as '0.8').\n2. Commas in Indonesian handwriting represent decimals (e.g., '2,5' or '6,8' means '2.5' or '6.8'). Convert them to dot '.' decimals.\n3. DO NOT round or truncate numbers (e.g., '2.5' or '2,5' must be extracted as '2.5', not '2').\n4. Return ONLY a valid JSON array of objects with keys: 'name', 'kilo', and 'modal'. If 'modal' is missing, leave it empty. Format numbers as decimals. Only return the JSON, no markdown tags." },
-                            { inline_data: { mime_type: "image/jpeg", data: image.split(',')[1] } }
+                            { text: "You are a precise OCR assistant specializing in reading handwritten Indonesian fish invoice tables. Extract name (IKAN), weight (KILO), and price (MODAL) from the image. Rules:\n1. Pay extreme attention to the shapes of handwritten digits. Do not confuse '6' with '0' (e.g., '6.8' must not be read as '0.8').\n2. Commas in Indonesian handwriting represent decimals (e.g., '2,5' or '6,8' means '2.5' or '6.8'). Convert them to dot '.' decimals.\n3. DO NOT round or truncate numbers (e.g., '2.5' or '2,5' must be extracted as '2.5', not '2').\n4. Return ONLY a valid JSON array of objects with keys: 'name', 'kilo', and 'modal'. If 'modal' is missing, leave it empty. Only return the raw JSON, no markdown tags." },
+                            { inline_data: { mime_type: "image/jpeg", data: image.includes(',') ? image.split(',')[1] : image } }
                         ]
                     }]
                 })
